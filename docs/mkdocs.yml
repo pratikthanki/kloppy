@@ -1,0 +1,29 @@
+site_name: kloppy
+site_url: https://github.com/PySport/kloppy
+repo_url: https://github.com/PySport/kloppy
+repo_name: 'GitHub'
+edit_uri: edit/master/docs/docs
+
+# TODO: set-up Google Analytics project to track
+google_analytics: null 
+
+remote_branch: master
+
+nav:
+    - Home: 'index.md'
+    - About: 'about.md'
+    - License: 'license.md'
+    - Issues: 'issues.md'
+    - Contributing: 'contributing.md'
+    - Sponsors: 'sponsors.md'
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+      - python
+  include_homepage_in_sidebar: True
+  prev_next_buttons_location: top
+  navigation_depth: 4
+  collapse_navigation: True
+  titles_only: False
+  sticky_navigation: True
