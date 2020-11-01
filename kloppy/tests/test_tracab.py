@@ -5,11 +5,13 @@ from kloppy.domain import (
     Period,
     AttackingDirection,
     Orientation,
+    Provider,
     Point,
     BallState,
     Team,
     Ground,
 )
+from kloppy.domain.models.common import DatasetType
 
 
 class TestTracabTracking:
@@ -27,6 +29,8 @@ class TestTracabTracking:
                 options={"only_alive": False},
             )
 
+        assert dataset.metadata.provider == Provider.TRACAB
+        assert dataset.dataset_type == DatasetType.TRACKING
         assert len(dataset.records) == 6
         assert len(dataset.metadata.periods) == 2
         assert dataset.metadata.orientation == Orientation.FIXED_HOME_AWAY

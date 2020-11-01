@@ -1,16 +1,16 @@
-from distutils.core import setup
-
 import setuptools
+
+from distutils.core import setup
 
 with open("README.md", "r") as f:
     readme = f.read()
 
 setup(
     name="kloppy",
-    version="1.0.0",
+    version="1.1.0",
     author="Koen Vossen",
     author_email="info@koenvossen.nl",
-    url="https://github.com/PySport/kloppy",
+    url="https://kloppy.pysport.org/",
     packages=setuptools.find_packages(exclude=["tests"]),
     license="BSD",
     description="Standardizing soccer tracking- and event data",

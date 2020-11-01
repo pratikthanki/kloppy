@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, Flag
 from typing import Optional, List, Dict
@@ -16,6 +16,16 @@ class Ground(Enum):
     HOME = "home"
     AWAY = "away"
     REFEREE = "referee"
+
+    def __str__(self):
+        return self.value
+
+
+class Provider(Enum):
+    METRICA = "metrica"
+    TRACAB = "tracab"
+    OPTA = "opta"
+    STATSBOMB = "statsbomb"
 
     def __str__(self):
         return self.value
@@ -211,9 +221,20 @@ class Metadata:
     frame_rate: float
     orientation: Orientation
     flags: DatasetFlag
+    provider: Provider
+
+
+class DatasetType(Enum):
+    TRACKING = "TRACKING"
+    EVENT = "EVENT"
 
 
 @dataclass
 class Dataset(ABC):
     records: List[DataRecord]
     metadata: Metadata
+
+    @property
+    @abstractmethod
+    def dataset_type(self) -> DatasetType:
+        raise NotImplementedError

@@ -51,7 +51,7 @@ pip install kloppy
 ```
 
 
-## <a name="datasets"></a>(Very) Qickstart
+## <a name="datasets"></a>(Very) Quickstart
 More and more companies are publishing (demo) datasets to get you started. Inspired by the `tensorflow_datasets` package,
 we added a "dataset loader" which does all the heavy lifting for you: find urls, download files, organize and load them.
 ```python
@@ -63,10 +63,11 @@ dataset = datasets.load("metrica_tracking", options={'sample_rate': 1./12, 'limi
 
 ## Quickstart
 
-We added some helper functions to get started really quickly. The helpers allow eay loading, transforming and converting to pandas of tracking data.
+We added some helper functions to get started really quickly. The helpers allow easy loading, transforming and converting to pandas of tracking data.
 ```python
 from kloppy import (
     load_metrica_tracking_data, 
+    load_metrica_json_event_data,
     load_tracab_tracking_data,
     load_epts_tracking_data, 
     load_statsbomb_event_data,
@@ -86,6 +87,8 @@ dataset = load_epts_tracking_data('meta.xml', 'raw_data.txt')
 dataset = load_statsbomb_event_data('event_data.json', 'lineup.json')
 # opta
 dataset = load_opta_event_data('f24_data.xml', 'f7_data.xml')
+# metrica json
+dataset = load_metrica_json_event_data('raw_data.json', 'meta.xml')
 
 
 dataset = transform(dataset, to_pitch_dimensions=[[0, 108], [-34, 34]])
@@ -100,7 +103,7 @@ reason about. Please browse to source of `domain.models` to find the available m
 
 ### <a name="deserializing"></a>(De)serializing data
 When working with tracking- or event data we need to deserialize it from the format the provider uses. **kloppy**
-will provide both deserializing as serializing. This will make it possible to read format one, transform and filter and store
+will provide both deserializing and serializing. This will make it possible to read format one, transform and filter and store
 in a different format.
 
 ```python
@@ -206,6 +209,29 @@ with open("f24_data.xml", "rb") as f24_data, \
         inputs={
             'f24_data': f24_data,
             'f7_data': f7_data
+        },
+        options={
+            "event_types": ["pass", "shot"]
+        }
+    )
+    
+    # start working with dataset
+```
+
+
+or Metrica Json event data
+```python
+from kloppy import MetricaEventsJsonSerializer
+
+serializer = MetricaEventsJsonSerializer()
+
+with open("eventdata.json", "rb") as event_data, \
+        open("metadata.xml", "rb") as metadata:
+
+    dataset = serializer.deserialize(
+        inputs={
+            'event_data': event_data,
+            'metadata': metadata
         },
         options={
             "event_types": ["pass", "shot"]

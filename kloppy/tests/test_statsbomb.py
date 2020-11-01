@@ -7,7 +7,9 @@ from kloppy.domain import (
     Orientation,
     Player,
     Position,
+    Provider,
 )
+from kloppy.domain.models.common import DatasetType
 
 
 class TestStatsbomb:
@@ -29,6 +31,8 @@ class TestStatsbomb:
                 inputs={"lineup_data": lineup_data, "event_data": event_data}
             )
 
+        assert dataset.metadata.provider == Provider.STATSBOMB
+        assert dataset.dataset_type == DatasetType.EVENT
         assert len(dataset.events) == 4002
         assert len(dataset.metadata.periods) == 2
         assert (

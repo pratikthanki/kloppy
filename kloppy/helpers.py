@@ -1,8 +1,9 @@
-from typing import Callable, TypeVar, Dict, Union
+from typing import Callable, TypeVar, Dict, Union, List
 
 from . import (
     TRACABSerializer,
     MetricaTrackingSerializer,
+    MetricaEventsJsonSerializer,
     EPTSSerializer,
     StatsBombSerializer,
     OptaSerializer,
@@ -22,6 +23,7 @@ from .domain import (
     PassResult,
     EventType,
     Player,
+    DataRecord,
 )
 
 
@@ -99,12 +101,26 @@ def load_opta_event_data(
         )
 
 
-DatasetType = TypeVar("DatasetType")
+def load_metrica_json_event_data(
+    raw_data_filename: str, metadata_filename: str, options: dict = None
+) -> EventDataset:
+    serializer = MetricaEventsJsonSerializer()
+    with open(metadata_filename, "rb") as metadata, open(
+        raw_data_filename, "rb"
+    ) as raw_data:
+
+        return serializer.deserialize(
+            inputs={"metadata": metadata, "raw_data": raw_data},
+            options=options,
+        )
+
+
+DatasetT = TypeVar("DatasetT")
 
 
 def transform(
-    dataset: DatasetType, to_orientation=None, to_pitch_dimensions=None
-) -> DatasetType:
+    dataset: DatasetT, to_orientation=None, to_pitch_dimensions=None
+) -> DatasetT:
     if to_orientation and isinstance(to_orientation, str):
         to_orientation = Orientation[to_orientation]
     if to_pitch_dimensions and (
@@ -189,7 +205,7 @@ def _event_to_pandas_row_converter(event: Event) -> Dict:
 
 
 def to_pandas(
-    dataset: Dataset,
+    dataset: Union[Dataset, List[DataRecord]],
     _record_converter: Callable = None,
     additional_columns: Dict = None,
 ) -> "DataFrame":
@@ -201,13 +217,25 @@ def to_pandas(
             " install it using: pip install pandas"
         )
 
+    if isinstance(dataset, Dataset):
+        records = dataset.records
+    elif isinstance(dataset, list):
+
+        records = dataset
+    else:
+        raise Exception("Unknown dataset type")
+
     if not _record_converter:
-        if isinstance(dataset, TrackingDataset):
+        if isinstance(dataset, TrackingDataset) or isinstance(
+            records[0], Frame
+        ):
             _record_converter = _frame_to_pandas_row_converter
-        elif isinstance(dataset, EventDataset):
+        elif isinstance(dataset, EventDataset) or isinstance(
+            records[0], Event
+        ):
             _record_converter = _event_to_pandas_row_converter
         else:
-            raise Exception("Unknown dataset type")
+            raise Exception("Don't know how to convert rows")
 
     def generic_record_converter(record: Union[Frame, Event]):
         row = _record_converter(record)
@@ -221,14 +249,13 @@ def to_pandas(
 
         return row
 
-    return pd.DataFrame.from_records(
-        map(generic_record_converter, dataset.records)
-    )
+    return pd.DataFrame.from_records(map(generic_record_converter, records))
 
 
 __all__ = [
     "load_tracab_tracking_data",
     "load_metrica_tracking_data",
+    "load_metrica_json_event_data",
     "load_epts_tracking_data",
     "load_statsbomb_event_data",
     "load_opta_event_data",

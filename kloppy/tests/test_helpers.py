@@ -19,13 +19,16 @@ from kloppy.domain import (
     PitchDimensions,
     Dimension,
     Orientation,
+    Provider,
     Frame,
     EventDataset,
     PassEvent,
     Metadata,
     Team,
-    Ground, Player,
+    Ground,
+    Player,
 )
+from kloppy.domain.models.common import DatasetType
 
 
 class TestHelpers:
@@ -37,6 +40,8 @@ class TestHelpers:
         )
         assert len(dataset.records) == 6
         assert len(dataset.metadata.periods) == 2
+        assert dataset.metadata.provider == Provider.METRICA
+        assert dataset.dataset_type == DatasetType.TRACKING
 
     def test_load_tracab_tracking_data(self):
         base_dir = os.path.dirname(__file__)
@@ -46,6 +51,8 @@ class TestHelpers:
         )
         assert len(dataset.records) == 5  # only alive=True
         assert len(dataset.metadata.periods) == 2
+        assert dataset.metadata.provider == Provider.TRACAB
+        assert dataset.dataset_type == DatasetType.TRACKING
 
     def _get_tracking_dataset(self):
         home_team = Team(team_id="home", name="home", ground=Ground.HOME)
@@ -76,6 +83,7 @@ class TestHelpers:
             periods=periods,
             teams=teams,
             score=None,
+            provider=None,
         )
 
         tracking_data = TrackingDataset(
@@ -96,7 +104,11 @@ class TestHelpers:
                     ball_owning_team=None,
                     ball_state=None,
                     period=periods[0],
-                    players_coordinates={Player(team=home_team, player_id="home_1", jersey_no=1): Point(x=15, y=35)},
+                    players_coordinates={
+                        Player(
+                            team=home_team, player_id="home_1", jersey_no=1
+                        ): Point(x=15, y=35)
+                    },
                     ball_coordinates=Point(x=0, y=50),
                 ),
             ],
@@ -137,8 +149,7 @@ class TestHelpers:
                 "home_1_y": {0: None, 1: 35.0},
             }
         )
-
-        assert_frame_equal(data_frame, expected_data_frame)
+        assert_frame_equal(data_frame, expected_data_frame, check_like=True)
 
     def test_to_pandas_generic_events(self):
         base_dir = os.path.dirname(__file__)
@@ -178,8 +189,8 @@ class TestHelpers:
                 "match": ["test", "test"],
                 "bonus_column": [11, 12],
                 "home_1_x": [None, 15],
-                "home_1_y": [None, 35]
+                "home_1_y": [None, 35],
             }
         )
 
-        assert_frame_equal(data_frame, expected_data_frame)
+        assert_frame_equal(data_frame, expected_data_frame, check_like=True)
